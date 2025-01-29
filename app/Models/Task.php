@@ -17,6 +17,7 @@ class Task extends Model
         'priority',
         'completion_date',
         'project_id',
+        'user_id',
     ];
 
     /**

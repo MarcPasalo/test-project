@@ -40,7 +40,7 @@ class ProjectController extends Controller
         $this->authorize('view', $project);
 
         $project->load(['tasks' => function ($query) {
-            $query->latest();
+            $query->with('user')->latest();
         }]);
 
         return Inertia::render('Projects/Show', [
