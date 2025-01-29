@@ -50,6 +50,7 @@ class ProjectController extends Controller
                 'total' => $project->tasks->count(),
                 'completed' => $project->tasks->where('status', 'completed')->count(),
             ],
+            'team' => Auth::user()->currentTeam->with(['owner', 'members'])->first(),
         ]);
     }
 
