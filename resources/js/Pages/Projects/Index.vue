@@ -45,27 +45,37 @@
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 
+                                            uppercase tracking-wider cursor-pointer"
+                                            @click="sortBy('title')"
                                     >
                                         Title
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 
+                                            uppercase tracking-wider cursor-pointer"
+                                            @click="sortBy('status')"
                                     >
                                         Status
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 
+                                            uppercase tracking-wider cursor-pointer"
+                                            @click="sortBy('due_date')"
                                     >
                                         Due Date
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 
+                                            uppercase tracking-wider cursor-pointer"
+                                            @click="sortBy('tasks_count')"
+
                                     >
                                         Tasks
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 
+                                        uppercase tracking-wider"
                                     >
                                         Actions
                                     </th>
@@ -75,7 +85,7 @@
                                 class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
                             >
                                 <tr
-                                    v-for="project in projects"
+                                    v-for="project in computedProjects"
                                     :key="project.id"
                                 >
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -246,8 +256,8 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useForm, Link } from "@inertiajs/vue3";
+import { ref, computed} from "vue";
+import { useForm, Link, usePage, router } from "@inertiajs/vue3";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import Modal from "@/Components/Modal.vue";
 import InputLabel from "@/Components/InputLabel.vue";
@@ -256,7 +266,7 @@ import InputError from "@/Components/InputError.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 
-defineProps({
+const props = defineProps({
     projects: {
         type: Array,
         required: true,
@@ -323,4 +333,26 @@ const formatStatus = (status) => {
 const formatDate = (date) => {
     return new Date(date).toLocaleDateString();
 };
+
+const computedProps = usePage().props;
+const computedProjects = computed(() => props.projects);
+const sortField = ref(computedProps.sortField || 'created_at');
+const sortDirection = ref(computedProps.sortDirection || 'desc');
+
+function sortBy(field) {
+    if (sortField.value === field) {
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortField.value = field;
+        sortDirection.value = 'asc';
+    }
+    
+    router.get(route('projects.index'), 
+    { 
+        sortField: sortField.value, sortDirection: sortDirection.value 
+    }, { 
+        preserveState: true,
+        replace: true 
+    });
+}
 </script>

@@ -9,15 +9,21 @@ use Inertia\Inertia;
 
 class ProjectController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $sortField = $request->query('sortField', 'created_at'); 
+        $sortDirection = $request->query('sortDirection', 'desc');
+
         $projects = Auth::user()->currentTeam->projects()
+            ->orderBy($sortField, $sortDirection)
             ->withCount('tasks')
             ->latest()
             ->get();
 
         return Inertia::render('Projects/Index', [
             'projects' => $projects,
+            'sortField' => $sortField,
+            'sortDirection' => $sortDirection,
         ]);
     }
 
