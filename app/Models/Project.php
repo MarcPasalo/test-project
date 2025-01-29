@@ -19,10 +19,18 @@ class Project extends Model
         'due_date',
         'team_id',
     ];
-
-    protected $casts = [
-        'due_date' => 'date',
-    ];
+    
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'due_date' => 'date',
+        ];
+    }
 
     public function team(): BelongsTo
     {

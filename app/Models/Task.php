@@ -19,9 +19,17 @@ class Task extends Model
         'project_id',
     ];
 
-    protected $casts = [
-        'completion_date' => 'date',
-    ];
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'completion_date' => 'date',
+        ];
+    }
 
     public function project(): BelongsTo
     {
