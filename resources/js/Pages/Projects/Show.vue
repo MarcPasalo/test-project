@@ -351,6 +351,21 @@
                                 class="mt-2"
                             />
                         </div>
+                        <div class="mt-4">
+                            <InputLabel for="assign" value="Assign the task (optional)" />
+                            <select
+                                id="assign"
+                                class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                v-model="taskForm.user_id"
+                            >    
+                                <option :value="team.owner.id">
+                                    Team owner: {{ team.owner.name }} 
+                                </option>
+                                <option v-for="member in team.members" :key="member.id" :value="member.id">
+                                    {{ member.name }}
+                                </option>
+                            </select>
+                        </div>
 
                         <div class="mt-6 flex justify-end">
                             <SecondaryButton
@@ -399,6 +414,10 @@ const props = defineProps({
         required: false,
         default: null,
     },
+    team: {
+        type: Object,
+        required: false,
+    },
 });
 
 const showTaskModal = ref(false);
@@ -408,6 +427,7 @@ const taskForm = useForm({
     description: "",
     status: "not_started",
     priority: "medium",
+    user_id: null,
     completion_date: null,
 });
 
