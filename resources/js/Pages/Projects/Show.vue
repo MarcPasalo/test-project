@@ -455,6 +455,7 @@ const editTask = (task) => {
     taskForm.status = task.status;
     taskForm.priority = task.priority;
     taskForm.completion_date = task.completion_date;
+    taskForm.user_id = task.user_id;
     showTaskModal.value = true;
 };
 
