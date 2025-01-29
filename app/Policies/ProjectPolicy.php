@@ -25,6 +25,7 @@ class ProjectPolicy
 
     public function delete(User $user, Project $project): bool
     {
-        return $user->belongsToTeam($project->team) && (! Auth::user()->hasTeamRole(Auth::user()->currentTeam, 'editor'));
+        return $user->ownsTeam($project->team) || 
+        ($user->belongsToTeam($project->team) && (! Auth::user()->hasTeamRole(Auth::user()->currentTeam, 'editor')));
     }
 }
