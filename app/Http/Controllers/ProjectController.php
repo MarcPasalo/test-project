@@ -41,12 +41,17 @@ class ProjectController extends Controller
         return redirect()->route('projects.index');
     }
 
-    public function show(Project $project)
+    public function show(Project $project, Request $request)
     {
         $this->authorize('view', $project);
 
-        $project->load(['tasks' => function ($query) {
-            $query->with('user')->latest();
+        $sortField = $request->query('sortField', 'users.name'); 
+        $sortDirection = $request->query('sortDirection', 'desc');
+
+        $project->load(['tasks' => function ($query) use ($sortField, $sortDirection) {
+            $query->leftJoin('users', 'tasks.user_id', '=', 'users.id')
+                ->with('user')
+                ->orderBy($sortField, $sortDirection);
         }]);
 
         return Inertia::render('Projects/Show', [
@@ -57,6 +62,8 @@ class ProjectController extends Controller
                 'completed' => $project->tasks->where('status', 'completed')->count(),
             ],
             'team' => Auth::user()->currentTeam->with(['owner', 'members'])->first(),
+            'sortField' => $sortField,
+            'sortDirection' => $sortDirection,
         ]);
     }
 

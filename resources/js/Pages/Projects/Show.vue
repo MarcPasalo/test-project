@@ -155,32 +155,43 @@
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 
+                                        uppercase tracking-wider cursor-pointer"
+                                        @click="sortBy('title')"
                                     >
                                         Title
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 
+                                        uppercase tracking-wider cursor-pointer"
+                                        @click="sortBy('status')"
                                     >
                                         Status
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 
+                                        uppercase tracking-wider cursor-pointer"
+                                        @click="sortBy('priority')"
                                     >
                                         Priority
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 
+                                        uppercase tracking-wider cursor-pointer"
+                                        @click="sortBy('completion_date')"
                                     >
                                         Completion Date
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 
+                                        uppercase tracking-wider cursor-pointer"
+                                        @click="sortBy('users.name')"
                                     >
                                         Assigned User
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 
+                                        uppercase tracking-wider cursor-pointer"
                                     >
                                         Actions
                                     </th>
@@ -189,7 +200,7 @@
                             <tbody
                                 class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
                             >
-                                <tr v-for="task in tasks" :key="task.id">
+                                <tr v-for="task in computedTasks" :key="task.id">
                                     <td class="px-6 py-4">
                                         <div
                                             class="text-sm font-medium text-gray-900 dark:text-gray-100"
@@ -398,8 +409,8 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useForm, Link } from "@inertiajs/vue3";
+import { ref, computed } from "vue";
+import { useForm, Link, usePage, router } from "@inertiajs/vue3";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import Modal from "@/Components/Modal.vue";
 import InputLabel from "@/Components/InputLabel.vue";
@@ -510,4 +521,26 @@ const formatStatus = (status) => {
 const formatDate = (date) => {
     return new Date(date).toLocaleDateString();
 };
+
+const computedProps = usePage().props;
+const computedTasks = computed(() => props.tasks);
+const sortField = ref(computedProps.sortField || 'created_at');
+const sortDirection = ref(computedProps.sortDirection || 'desc');
+
+function sortBy(field) {
+    if (sortField.value === field) {
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortField.value = field;
+        sortDirection.value = 'asc';
+    }
+    
+    router.get(route('projects.show', props.project), 
+    { 
+        sortField: sortField.value, sortDirection: sortDirection.value 
+    }, { 
+        preserveState: true,
+        replace: true 
+    });
+}
 </script>
