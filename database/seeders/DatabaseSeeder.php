@@ -15,9 +15,26 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->withPersonalTeam()->create();
 
-        User::factory()->withPersonalTeam()->create([
+        $owner = User::factory()->withPersonalTeam()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'password' => bcrypt('test123'),
         ]);
+
+        $owner->currentTeam->users()->attach(
+            User::factory()->create([
+                'email' => 'admin@example.com',
+                'password' => bcrypt('test123'),
+                'current_team_id' => $owner->currentTeam->id
+            ]), ['role' => 'admin']
+        );
+
+        $owner->currentTeam->users()->attach(
+            User::factory()->create([
+                'email' => 'editor@example.com',
+                'password' => bcrypt('test123'),
+                'current_team_id' => $owner->currentTeam->id
+            ]), ['role' => 'editor']
+        );
     }
 }
