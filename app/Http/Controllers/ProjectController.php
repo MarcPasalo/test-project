@@ -17,7 +17,6 @@ class ProjectController extends Controller
         $projects = Auth::user()->currentTeam->projects()
             ->orderBy($sortField, $sortDirection)
             ->withCount('tasks')
-            ->latest()
             ->get();
 
         return Inertia::render('Projects/Index', [
