@@ -44,13 +44,11 @@ class ProjectController extends Controller
     {
         $this->authorize('view', $project);
 
-        $sortField = $request->query('sortField', 'users.name'); 
+        $sortField = $request->query('sortField', 'created_at'); 
         $sortDirection = $request->query('sortDirection', 'desc');
 
         $project->load(['tasks' => function ($query) use ($sortField, $sortDirection) {
-            $query->leftJoin('users', 'tasks.user_id', '=', 'users.id')
-                ->with('user')
-                ->orderBy($sortField, $sortDirection);
+            $query->with('user')->orderBy($sortField, $sortDirection);
         }]);
 
         return Inertia::render('Projects/Show', [
