@@ -509,7 +509,7 @@ const deleteTask = (task) => {
 };
 
 const markAsCompleted = (task) => {
-    taskForm.put(
+    router.put(
         route("tasks.update", task.id),
         {
             ...task,
