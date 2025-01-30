@@ -48,12 +48,18 @@ class ProjectController extends Controller
     public function show(Project $project, Request $request)
     {
         $this->authorize('view', $project);
+        
+        $filters = $request->only(['search']);
 
         $sortField = $request->query('sortField', 'created_at'); 
         $sortDirection = $request->query('sortDirection', 'desc');
 
-        $project->load(['tasks' => function ($query) use ($sortField, $sortDirection) {
-            $query->with('user')->orderBy($sortField, $sortDirection);
+        $project->load(['tasks' => function ($query) use ($sortField, $sortDirection, $filters) {
+            $query->with('user')
+                ->when($filters['search'] ?? null, function ($query, $search) {
+                    $query->where('title', 'like', "%$search%");
+                })
+                ->orderBy($sortField, $sortDirection);
         }]);
 
         return Inertia::render('Projects/Show', [

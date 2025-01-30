@@ -121,6 +121,13 @@
                     </div>
                 </div>
 
+                <input 
+                    v-model="search"
+                    type="text"
+                    placeholder="Search for tasks"
+                    class="border p-2 rounded mb-4"
+                />
+
                 <!-- Tasks Section -->
                 <div
                     class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6"
@@ -409,7 +416,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useForm, Link, usePage, router } from "@inertiajs/vue3";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import Modal from "@/Components/Modal.vue";
@@ -438,6 +445,10 @@ const props = defineProps({
         default: null,
     },
     team: {
+        type: Object,
+        required: false,
+    },
+    filters: {
         type: Object,
         required: false,
     },
@@ -543,4 +554,10 @@ function sortBy(field) {
         replace: true 
     });
 }
+
+const search = ref(props.filters?.search || "");
+
+watch(search, (newSearch) => {
+    router.get(route("projects.show", props.project), { search: newSearch }, { preserveState: true, replace: true });
+});
 </script>
