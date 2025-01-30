@@ -10,11 +10,15 @@ use Inertia\Inertia;
 class ProjectController extends Controller
 {
     public function index(Request $request)
-    {
+    {   
+        $filters = $request->only(['search']);
         $sortField = $request->query('sortField', 'created_at'); 
         $sortDirection = $request->query('sortDirection', 'desc');
 
         $projects = Auth::user()->currentTeam->projects()
+            ->when($filters['search'] ?? null, function ($query, $search) {
+                $query->where('title', 'like', "%$search%");
+            })
             ->orderBy($sortField, $sortDirection)
             ->withCount('tasks')
             ->get();
@@ -23,6 +27,7 @@ class ProjectController extends Controller
             'projects' => $projects,
             'sortField' => $sortField,
             'sortDirection' => $sortDirection,
+            'filters' => $filters
         ]);
     }
 

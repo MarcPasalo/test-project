@@ -29,6 +29,13 @@
                         </PrimaryButton>
                     </div>
 
+                    <input 
+                        v-model="search"
+                        type="text"
+                        placeholder="Search for projects"
+                        class="border p-2 rounded mb-4"
+                    />
+
                     <div v-if="projects.length === 0" class="text-center py-12">
                         <div class="text-gray-500 dark:text-gray-400 mb-2">
                             No projects found
@@ -256,7 +263,7 @@
 </template>
 
 <script setup>
-import { ref, computed} from "vue";
+import { ref, computed, watch } from "vue";
 import { useForm, Link, usePage, router } from "@inertiajs/vue3";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import Modal from "@/Components/Modal.vue";
@@ -270,6 +277,10 @@ const props = defineProps({
     projects: {
         type: Array,
         required: true,
+    },
+    filters: {
+        type: Object,
+        required: false,
     },
 });
 
@@ -355,4 +366,10 @@ function sortBy(field) {
         replace: true 
     });
 }
+
+const search = ref(props.filters?.search || "");
+
+watch([search], ([newSearch]) => {
+    router.get(route("projects.index"), { search: newSearch }, { preserveState: true, replace: true });
+});
 </script>
