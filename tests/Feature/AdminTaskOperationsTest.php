@@ -11,7 +11,10 @@ beforeEach(function () {
     $this->owner->currentTeam->users()->attach(
         $this->admin = User::factory()->create([
             'current_team_id' => $this->owner->currentTeam->id
-        ]), ['role' => 'admin']
+        ]), ['role' => 'admin'],
+        $this->editor = User::factory()->create([
+            'current_team_id' => $this->owner->currentTeam->id
+        ]), ['role' => 'editor'],
     );
 
     $this->project_details = [
@@ -95,4 +98,42 @@ test('admin can delete a task', function () {
         ->assertRedirect(route('projects.show', ['project' => $this->project->id]));
 
     expect($this->project->fresh()->tasks)->toHaveCount(0);
+});
+
+test('admin can assign a task to a specific user when creating a task', function () {
+
+    $task_details = [
+        'title' => 'some title',
+        'description' => 'some description',
+        'status' => 'in_progress',
+        'priority' => 'low',
+        'completion_date' => '2025-02-19',
+        'project_id' => $this->project->id,
+        'user_id' => $this->editor->id,
+    ];
+
+    $this->actingAs($this->admin)
+        ->post(route('projects.tasks.store', ['project' => $this->project->id]), $task_details)
+        ->assertRedirect(route('projects.show', ['project' => $this->project->id]));
+    
+    expect($this->project->tasks->fresh()->where('user', '!=',  null))->toHaveCount(1);
+});
+
+test('admin can assign a task to a specific user when updating a task', function () {
+
+    $updated_task_details = [
+        'title' => 'edited title',
+        'description' => 'some description',
+        'status' => 'in_progress',
+        'priority' => 'low',
+        'completion_date' => '2025-02-19',
+        'project_id' => $this->project->id,
+        'user_id' => $this->editor->id,
+    ];
+
+    $this->actingAs($this->admin)
+        ->put(route('tasks.update', $this->task->id), $updated_task_details)
+        ->assertRedirect(route('projects.show', ['project' => $this->project->id]));
+    
+    expect($this->project->tasks->fresh()->where('user', '!=',  null)->value('title'))->toEqual($updated_task_details['title']);
 });
