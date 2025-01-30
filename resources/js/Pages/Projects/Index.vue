@@ -369,7 +369,7 @@ function sortBy(field) {
 
 const search = ref(props.filters?.search || "");
 
-watch([search], ([newSearch]) => {
+watch(search, (newSearch) => {
     router.get(route("projects.index"), { search: newSearch }, { preserveState: true, replace: true });
 });
 </script>
