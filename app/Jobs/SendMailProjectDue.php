@@ -10,6 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Mail\ProjectsDueOneDay;
 use App\Models\Project;
+use App\Models\Team;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -30,10 +31,10 @@ class SendMailProjectDue implements ShouldQueue
      * Execute the job.
      */
     public function handle(): void
-    {   
-        $adminsAndOwners = User::whereHas('teams', function ($query) {
-            $query->where('team_user.role', 'admin')
-                  ->orWhereColumn('teams.user_id', 'users.id'); 
+    {  
+        $owner = User::whereIn('id', Team::pluck('user_id'))->pluck('email'); 
+        $admins = User::whereHas('teams', function ($query) {
+            $query->where('team_user.role', 'admin'); 
         })->pluck('email');
 
         $projects = Project::whereBetween('due_date', [
@@ -42,7 +43,7 @@ class SendMailProjectDue implements ShouldQueue
         ])->where('status', '!=' , 'completed')->get();
             
         if ($projects->isNotEmpty()) {
-            Mail::to($adminsAndOwners)->send(new ProjectsDueOneDay($projects));
+            Mail::to($owner, $admins)->send(new ProjectsDueOneDay($projects));
         }
     }
 }

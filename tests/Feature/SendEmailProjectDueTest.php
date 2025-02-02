@@ -4,6 +4,7 @@ use App\Jobs\SendMailProjectDue;
 use App\Mail\ProjectsDueOneDay;
 use App\Models\Project;
 use App\Models\User;
+use App\Models\Team;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Artisan;
@@ -17,7 +18,11 @@ beforeEach(function () {
     $this->owner->currentTeam->users()->attach(
         $this->admin = User::factory()->create([
             'current_team_id' => $this->owner->currentTeam->id
-        ]), ['role' => 'admin']
+        ]), ['role' => 'admin'],
+        $this->editor = User::factory()->create([
+            'current_team_id' => $this->owner->currentTeam->id
+        ]), ['role' => 'editor'],
+
     );
 
     //Due in one day
@@ -59,16 +64,17 @@ test('the scheduled job should be pushed', function () {
     Queue::assertPushed(SendMailProjectDue::class);
 });
 
-test('emails should be sent when the job is dispatched', function () {
+test('emails should be sent to owners and admins only when the job is dispatched', function () {
     SendMailProjectDue::dispatch();
 
-    $adminsAndOwners = User::whereHas('teams', function ($query) {
-        $query->where('team_user.role', 'admin')
-              ->orWhereColumn('teams.user_id', 'users.id'); 
+    $owner = User::whereIn('id', Team::pluck('user_id'))->pluck('email'); 
+    $admins = User::whereHas('teams', function ($query) {
+        $query->where('team_user.role', 'admin'); 
     })->pluck('email');
 
-    Mail::assertSent(ProjectsDueOneDay::class, function ($mail) use ($adminsAndOwners) {
-        return $mail->hasTo($adminsAndOwners)
+    Mail::assertSent(ProjectsDueOneDay::class, function ($mail) {
+        return $mail->hasTo([$this->owner->email, $this->admin->email])
+            && (! $mail->hasTo([$this->editor->email]))
             && $mail->projects->contains('title', 'First Project')
             && (! $mail->projects->contains('title', 'Second Project'))
             && (! $mail->projects->contains('title', 'Third Project')); 
